@@ -421,10 +421,12 @@
     ;; When #t, a resize-to-fit is called after new data is added to the map
     ;; widget.  This flag is reset if the user moves or zooms the map.
     (define auto-resize-to-fit? #f)
-
+    
     ;; When true a resize-to-fit was called inside an edit sequence and will
-    ;; be executed at the end of the edit sequence.
+    ;; be executed at the end of the edit sequence. The parameter group is stored
+    ;; in delayed-resize-to-fit-group.
     (define delayed-resize-to-fit? #f)
+    (define delayed-resize-to-fit-group #f)
 
     ;;; data to display on the map
     (define tracks '())
@@ -951,7 +953,9 @@
               (set! auto-resize-to-fit? saved-flag))
             (center-map group)
             (refresh))
-          (set! delayed-resize-to-fit? #t)))
+          (begin
+            (set! delayed-resize-to-fit-group group)
+            (set! delayed-resize-to-fit? #t))))
 
     ;; move the map such that POSITION is in the center
     (define/public (move-to position)
@@ -994,7 +998,7 @@
       (when (zero? edit-sequence-level)
         (when delayed-resize-to-fit?
           (set! delayed-resize-to-fit? #f)
-          (resize-to-fit))
+          (resize-to-fit delayed-resize-to-fit-group))
         (refresh)))
 
     (when track
